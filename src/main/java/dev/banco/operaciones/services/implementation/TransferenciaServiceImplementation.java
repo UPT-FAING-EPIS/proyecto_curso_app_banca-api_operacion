@@ -9,8 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @Slf4j
 public class TransferenciaServiceImplementation implements TransferenciaService {
@@ -24,8 +22,12 @@ public class TransferenciaServiceImplementation implements TransferenciaService 
     @Override
     public Transferencia realizarTranferencia(Transferencia transferencia) {
         log.info("Realizando transferencia: {}", transferencia);
-        CuentaBancaria origen = obtenerCuentaBancaria(transferencia.getCuentaOrigen());
-        CuentaBancaria destino = obtenerCuentaBancaria(transferencia.getCuentaDestino());
+        CuentaBancaria origen = this.cuentaBancariaRepository
+                .findByNumeroCuenta(transferencia.getCuentaOrigen())
+                .orElse(null);
+        CuentaBancaria destino = this.cuentaBancariaRepository
+                .findByNumeroCuenta(transferencia.getCuentaDestino())
+                .orElse(null);
 
         if (origen == null || destino == null) {
             throw new IllegalArgumentException("Cuentas de origen o destino inválidas");
@@ -44,20 +46,11 @@ public class TransferenciaServiceImplementation implements TransferenciaService 
         destino.abonar(transferencia.getMonto());
 
         // Actualizar las cuentas en el repositorio
-        this.actualizarCuentaBancaria(origen);
-        this.actualizarCuentaBancaria(destino);
+        this.cuentaBancariaRepository.save(origen);
+        this.cuentaBancariaRepository.save(destino);
 
         return transferencia;
 
-    }
-
-    private CuentaBancaria obtenerCuentaBancaria(String numeroCuenta) {
-        Optional<CuentaBancaria> cuentaBancariaOptional = this.cuentaBancariaRepository.findByNumeroCuenta(numeroCuenta);
-        return cuentaBancariaOptional.orElse(null);
-    }
-
-    private void actualizarCuentaBancaria(CuentaBancaria cuentaBancaria) {
-        this.cuentaBancariaRepository.save(cuentaBancaria);
     }
 
 }
