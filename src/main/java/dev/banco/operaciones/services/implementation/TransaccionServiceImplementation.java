@@ -1,9 +1,7 @@
 package dev.banco.operaciones.services.implementation;
 
 import dev.banco.operaciones.controllers.dtos.TransaccionDTO;
-import dev.banco.operaciones.models.CuentaBancaria;
-import dev.banco.operaciones.models.TipoTransaccion;
-import dev.banco.operaciones.models.Transaccion;
+import dev.banco.operaciones.models.*;
 import dev.banco.operaciones.repositories.CuentaBancariaRepository;
 import dev.banco.operaciones.repositories.TransaccionRepository;
 import dev.banco.operaciones.services.TransaccionService;
@@ -11,8 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 @Service
 public class TransaccionServiceImplementation implements TransaccionService {
@@ -21,6 +20,14 @@ public class TransaccionServiceImplementation implements TransaccionService {
 
     @Autowired
     private CuentaBancariaRepository cuentaBancariaRepository;
+
+    private final Map<TipoTransaccion, OperacionTransaccion> operaciones;
+
+    public TransaccionServiceImplementation() {
+        this.operaciones = new HashMap<>();
+        operaciones.put(TipoTransaccion.RETIRO, new RetiroOperacion());
+        operaciones.put(TipoTransaccion.DEPOSITO, new DepositoOperacion());
+    }
 
     @Override
     public Transaccion realizarTransaccion(TransaccionDTO transaccionDTO) {
@@ -34,11 +41,16 @@ public class TransaccionServiceImplementation implements TransaccionService {
         return this.transaccionRepository.findAll();
     }
 
+    @Override
+    public List<Transaccion> findByNumeroCuenta(String numeroCuenta) {
+        return this.transaccionRepository.findByCuentaNumeroCuenta(numeroCuenta).orElse(null);
+    }
+
     private Transaccion crearTransaccion(TransaccionDTO transaccionDTO) {
 
         transaccionDTO.validarTipoOperacion();
 
-        CuentaBancaria cuentaBancaria = obtenerCuentaBancaria(transaccionDTO.getNumeroCuenta());
+        CuentaBancaria cuentaBancaria = this.cuentaBancariaRepository.findByNumeroCuenta(transaccionDTO.getNumeroCuenta()).orElse(null);
 
         if (cuentaBancaria == null) {
             throw new IllegalArgumentException("Número de cuenta invalida.. ");
@@ -55,19 +67,11 @@ public class TransaccionServiceImplementation implements TransaccionService {
         transaccion.setCuenta(cuentaBancaria);
         transaccion.setFechaHoraTransaccion(LocalDateTime.now());
 
-        if(transaccion.getTipo() == TipoTransaccion.RETIRO) {
-            cuentaBancaria.debitar(transaccionDTO.getMonto());
-        } else if(transaccion.getTipo() == TipoTransaccion.DEPOSITO){
-            cuentaBancaria.abonar(transaccionDTO.getMonto());
-        }
+        OperacionTransaccion operacion = this.operaciones.get(transaccion.getTipo());
+        operacion.realizarOperacion(cuentaBancaria, transaccionDTO.getMonto());
 
         cuentaBancariaRepository.save(cuentaBancaria);
 
         return transaccion;
-    }
-
-    private CuentaBancaria obtenerCuentaBancaria(String numeroCuenta) {
-        Optional<CuentaBancaria> cuentaBancariaOptional = this.cuentaBancariaRepository.findByNumeroCuenta(numeroCuenta);
-        return cuentaBancariaOptional.orElse(null);
     }
 }

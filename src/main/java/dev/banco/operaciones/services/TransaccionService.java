@@ -1,6 +1,7 @@
 package dev.banco.operaciones.services;
 
 import dev.banco.operaciones.controllers.dtos.TransaccionDTO;
+import dev.banco.operaciones.models.CuentaBancaria;
 import dev.banco.operaciones.models.Transaccion;
 
 import java.util.List;
@@ -10,4 +11,5 @@ public interface TransaccionService {
     Transaccion realizarTransaccion(TransaccionDTO transaccion);
     List<Transaccion> findAll();
 
+    List<Transaccion> findByNumeroCuenta(String numeroCuenta);
 }

@@ -33,6 +33,18 @@ public class TransaccionController {
         );
     }
 
+    @PostMapping("/numerocuenta")
+    public ResponseEntity<Response> findByNumeroCuenta(@RequestBody String numeroCuenta){
+        return ResponseEntity.ok(
+                Response.builder()
+                        .timeStamp(now())
+                        .message("Transacciones realizadas por " + numeroCuenta)
+                        .status(OK)
+                        .data(Map.of("transacciones", this.transaccionService.findByNumeroCuenta(numeroCuenta)))
+                        .build()
+        );
+    }
+
     @PostMapping()
     public ResponseEntity<Response> realizarTransaccion(@RequestBody TransaccionDTO transaccionDTO) {
         Transaccion transaccionRealizada = this.transaccionService.realizarTransaccion(transaccionDTO);

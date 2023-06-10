@@ -1,5 +1,6 @@
 package dev.banco.operaciones.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -9,6 +10,9 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name="transacciones")
 @Data
+@JsonIgnoreProperties(value = {
+        "cuenta"
+})
 public class Transaccion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
