@@ -9,9 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class TransaccionServiceImplementation implements TransaccionService {
@@ -20,14 +18,6 @@ public class TransaccionServiceImplementation implements TransaccionService {
 
     @Autowired
     private CuentaBancariaRepository cuentaBancariaRepository;
-
-    private final Map<TipoTransaccion, OperacionTransaccion> operaciones;
-
-    public TransaccionServiceImplementation() {
-        this.operaciones = new HashMap<>();
-        operaciones.put(TipoTransaccion.RETIRO, new RetiroOperacion());
-        operaciones.put(TipoTransaccion.DEPOSITO, new DepositoOperacion());
-    }
 
     @Override
     public Transaccion realizarTransaccion(TransaccionDTO transaccionDTO) {
@@ -67,7 +57,7 @@ public class TransaccionServiceImplementation implements TransaccionService {
         transaccion.setCuenta(cuentaBancaria);
         transaccion.setFechaHoraTransaccion(LocalDateTime.now());
 
-        OperacionTransaccion operacion = this.operaciones.get(transaccion.getTipo());
+        Operacion operacion = OperacionFactory.getOperacion(transaccion.getTipo());
         operacion.realizarOperacion(cuentaBancaria, transaccionDTO.getMonto());
 
         cuentaBancariaRepository.save(cuentaBancaria);

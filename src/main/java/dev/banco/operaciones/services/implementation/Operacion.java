@@ -4,7 +4,7 @@ import dev.banco.operaciones.models.CuentaBancaria;
 
 import java.math.BigDecimal;
 
-public interface OperacionTransaccion {
+public interface Operacion {
 
     void realizarOperacion(CuentaBancaria cuentaBancaria, BigDecimal monto);
 }
