@@ -4,7 +4,7 @@ import dev.banco.operaciones.models.CuentaBancaria;
 
 import java.math.BigDecimal;
 
-public class RetiroOperacion implements OperacionTransaccion {
+public class RetiroOperacion implements Operacion {
 
     @Override
     public void realizarOperacion(CuentaBancaria cuentaBancaria, BigDecimal monto) {
